@@ -11,7 +11,7 @@ const mySwiper = new Swiper('.swiper-container', {
 // cart
 const buttonCart = document.querySelector('.button-cart');
 const modalCart = document.querySelector('#modal-cart');
-const modalClose = document.querySelector('.modal-close');
+// const modalClose = document.querySelector('.modal-close'); // Сделано через event
 
 const openModal = function () {
 	modalCart.classList.add('show');
@@ -22,7 +22,19 @@ const closeModal = function () {
 };
 
 buttonCart.addEventListener('click', openModal);
-modalClose.addEventListener('click', closeModal);
+// modalClose.addEventListener('click', closeModal); // Сделано через event
+
+modalCart.addEventListener('click', function (event) {
+	const target = event.target;
+
+	if (
+		// Если
+		target.classList.contains('overlay') || // кликнули мимо модального окна ИЛИ
+		target.classList.contains('modal-close') // кликнули на крестик модального окна,
+	) {
+		closeModal(); // то закрываем модальное окно
+	}
+});
 
 // scroll smooth
 /*
@@ -56,3 +68,17 @@ modalClose.addEventListener('click', closeModal);
 		});
 	}
 }
+
+// Тернарный оператор - объяснение Макса: [Условие] ? [Если истина] : [Если ложь]
+//_______________________________________________________________________________ начало
+// let a = 5;
+// let x = prompt('Угадай число');
+
+// let result =
+// 	x > a
+// 		? 'Ваше число больше загаданного'
+// 		: x < a
+// 		? 'Ваше число меньше загаданного'
+// 		: 'Вы угадали';
+// console.log(result);
+// _______________________________________________________________________________ конец
