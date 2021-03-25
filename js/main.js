@@ -36,9 +36,30 @@ modalCart.addEventListener('click', function (event) {
 	}
 });
 
-// scroll smooth
+// SCROLL-SMOOTH
 /*
+// Первый вариант плавного скроллинга страницы
+//_____________________________________________________________________________
 (function () {
+	const scrollLinks = document.querySelectorAll('a.scroll-link');
+
+	for (let i = 0; i < scrollLinks.length; i++) {
+		scrollLinks[i].addEventListener('click', function (event) {
+			event.preventDefault();	// Отключаем действие по умолчанию, чтобы заменить своим
+			const id = scrollLinks[i].getAttribute('href');
+			document.querySelector(id).scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
+		});
+	}
+})();
+________________________________________________________________________________
+*/
+
+// Второй вариант плавного скроллинга страницы
+/* ______________________________________________________________________________
+{
 	const scrollLinks = document.querySelectorAll('a.scroll-link');
 
 	for (let i = 0; i < scrollLinks.length; i++) {
@@ -51,16 +72,18 @@ modalCart.addEventListener('click', function (event) {
 			});
 		});
 	}
-})();
+}
+__________________________________________________________________________________
 */
 
+// Третий вариант плавного скроллинга страницы
 {
 	const scrollLinks = document.querySelectorAll('a.scroll-link');
 
-	for (let i = 0; i < scrollLinks.length; i++) {
-		scrollLinks[i].addEventListener('click', function (event) {
+	for (const scrollLink of scrollLinks) {
+		scrollLink.addEventListener('click', function (event) {
 			event.preventDefault();
-			const id = scrollLinks[i].getAttribute('href');
+			const id = scrollLink.getAttribute('href');
 			document.querySelector(id).scrollIntoView({
 				behavior: 'smooth',
 				block: 'start',
@@ -82,3 +105,104 @@ modalCart.addEventListener('click', function (event) {
 // 		: 'Вы угадали';
 // console.log(result);
 // _______________________________________________________________________________ конец
+
+// Goods
+
+const more = document.querySelector('.more'); // Кнопка View all
+const navigationLink = document.querySelectorAll('.navigation-link'); // Меню header-а
+const longGoodsList = document.querySelector('.long-goods-list'); // Список товаров
+
+// Функция, которая получает данные (товары) с сервера. Функция асинхронная, поэтому позволяет
+// использовать await - ожидание получения результата от fetch
+
+const getGoods = async function () {
+	const result = await fetch('db/db.json'); // Функция, встроенная в браузер, обращается к серверу и даёт promice,
+	// что сервер ответит. Параметр функции - адрес (url) файла, который обрабатывает запрос
+	// Если result имеет свойство ok: true , то значит запрос отработал нормально
+	// Для тренировки можно указать в fetch фейковый url: https://jsonplaceholder.typicode.com/todos/1
+	// Если убрать /1, то будут запрошены все данные, а не одна позиция
+	if (!result.ok) {
+		// Если запрос не ок, то
+		throw 'Ошибочка вышла: ' + result.status; // Принудительно выдаём сообщение об ошибке
+	}
+	return await result.json(); // Метод json возвращает данные в формате json (массив в данном случае)
+	// можно return await result.text; Вернёт данные в формате текста
+};
+
+// getGoods().then(function (data) {
+// Метод then ждёт, когда выполнится getGoods(), и только после этого
+// выполняет function (data)
+//	console.log(data);
+//});
+
+// Создаём карточку с товаром, используя метод деструктуризации
+const createCard = function ({ label, name, img, description, id, price }) {
+	// objCard - это объект, содержащий все карточки товаров
+	const card = document.createElement('div');
+	card.className = 'col-lg-3 col-sm-6'; // Создаёт новые классы для card, затирая старые классы (если бы были)
+	// Заполняет данными HTML блок div (card). Обратные кавычки позволяют заносить
+	// форматированный текст
+	card.innerHTML = `
+						<div class="goods-card">
+							${label ? `<span class="label">${label}</span>` : ''}
+								 							
+							<img
+								src="db/${img}"
+								alt="${name}"
+								class="goods-image"
+							/>
+							<h3 class="goods-title">${name}</h3>
+							<p class="goods-description">${description}</p> <!-- Интерполяция -->
+							<button class="button goods-card-btn add-to-cart" data-id="${id}">
+								<span class="button-price">$${price}</span>
+							</button>
+						</div>
+				`;
+	return card;
+};
+
+// Выводим карточки на страницу, получив их с сервера
+const renderCards = function (data) {
+	longGoodsList.textContent = ''; // Зачищает данные
+	const cards = data.map(createCard); // Метод map берет данные массива с сервера, формирует
+	// и передаёт в итоге весь массив в cards
+	// cards.forEach(function (card) {	|
+	// 	longGoodsList.append(card);			|	Первый вариант. Второй вариант следует за этим (...cards)
+
+	longGoodsList.append(...cards); //| Второй вариант (Метод spread???)
+
+	document.body.classList.add('show-goods');
+};
+
+more.addEventListener('click', function (event) {
+	event.preventDefault();
+	getGoods().then(renderCards);
+});
+
+// Фильтруем карточки (с помощью функции фильтр)
+//___________________________________________________________________________
+const filterCards = function (field, value) {
+	// Функция получает свойство и значение
+	getGoods()
+		.then(function (data) {
+			// Для этого сначала получает данные с сервера (строка выше),
+			// а затем фильтрует их по параметрам field & value (строка ниже)
+			const filteredGoods = data.filter(function (good) {
+				return good[field] === value; // Если истина, то возвращает этот товар в filteredGoods,
+				// а если ложь, то товар игнорируется, и сортировка переходит к следующему товару
+			});
+			return filteredGoods; // Функция возвращает отфильтрованный массив
+		}) // Здесь не должно быть точки с запятой (;), только после последнего .then
+		.then(renderCards);
+};
+
+navigationLink.forEach(function (link) {
+	link.addEventListener('click', function (event) {
+		event.preventDefault();
+		const field = link.dataset.field;
+		const value = link.textContent;
+		console.log(field);
+		console.log(value);
+		filterCards(field, value);
+	});
+});
