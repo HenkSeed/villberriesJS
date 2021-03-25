@@ -81,7 +81,7 @@ ________________________________________________________________________________
 	const scrollLinks = document.querySelectorAll('a.scroll-link');
 
 	for (const scrollLink of scrollLinks) {
-		scrollLink.addEventListener('click', function (event) {
+		scrollLink.addEventListener('click', (event) => {
 			event.preventDefault();
 			const id = scrollLink.getAttribute('href');
 			document.querySelector(id).scrollIntoView({
@@ -108,8 +108,10 @@ ________________________________________________________________________________
 
 // Goods
 
-const more = document.querySelector('.more'); // Кнопка View all
-const navigationLink = document.querySelectorAll('.navigation-link'); // Меню header-а
+const viewAll = document.querySelectorAll('.view-all'); // Кнопка View all
+const navigationLink = document.querySelectorAll(
+	'.navigation-link:not(.view-all)'
+); // Меню header-а, плюс псевдокласс not исключает работу функции с .view-all
 const longGoodsList = document.querySelector('.long-goods-list'); // Список товаров
 
 // Функция, которая получает данные (товары) с сервера. Функция асинхронная, поэтому позволяет
@@ -174,10 +176,16 @@ const renderCards = function (data) {
 	document.body.classList.add('show-goods');
 };
 
-more.addEventListener('click', function (event) {
+// Блок добавлен в связи с домашкой по выбору в верхнем меню All
+//--------------------------------------------------------------
+const showAll = function (event) {
 	event.preventDefault();
 	getGoods().then(renderCards);
-});
+};
+
+viewAll.forEach(function (elem) {
+	elem.addEventListener('click', showAll);
+}); // Работает с querySelectorAll
 
 // Фильтруем карточки (с помощью функции фильтр)
 //___________________________________________________________________________
