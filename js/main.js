@@ -108,15 +108,16 @@ ________________________________________________________________________________
 
 // Goods
 
+const longGoodsList = document.querySelector('.long-goods-list'); // Список товаров
 const viewAll = document.querySelectorAll('.view-all'); // Кнопка View all
 const navigationLink = document.querySelectorAll(
 	'.navigation-link:not(.view-all)'
 ); // Меню header-а, плюс псевдокласс not исключает работу функции с .view-all
-const longGoodsList = document.querySelector('.long-goods-list'); // Список товаров
+const showAcsessories = document.querySelectorAll('.showAcsessories'); // При нажатии на картинку с набором аксессуаров требуется эта константа
+const showClothing = document.querySelectorAll('.showClothing'); // При нажатии на картинку с набором одежды требуется эта константа
 
 // Функция, которая получает данные (товары) с сервера. Функция асинхронная, поэтому позволяет
 // использовать await - ожидание получения результата от fetch
-
 const getGoods = async function () {
 	const result = await fetch('db/db.json'); // Функция, встроенная в браузер, обращается к серверу и даёт promice,
 	// что сервер ответит. Параметр функции - адрес (url) файла, который обрабатывает запрос
@@ -212,5 +213,19 @@ navigationLink.forEach(function (link) {
 		console.log(field);
 		console.log(value);
 		filterCards(field, value);
+	});
+});
+
+showAcsessories.forEach((item) => {
+	item.addEventListener('click', (event) => {
+		event.preventDefault();
+		filterCards('category', 'Accessories');
+	});
+});
+
+showClothing.forEach((item) => {
+	item.addEventListener('click', (event) => {
+		event.preventDefault();
+		filterCards('category', 'Clothing');
 	});
 });
